@@ -1,6 +1,7 @@
 %%% -------------------------------------------------------------------
-%%% Author  : Joq Erlang
-%%% Created : 10 dec 2012
+%%% @author  : Joq Erlang
+%%% @doc : Starts a computer eithre in master or worker mode
+%%% 
 %%% Description boot_service
 %%% Make and start the board start SW.
 %%%  boot_service initiates tcp_server and listen on port
@@ -34,7 +35,7 @@
 
 
 %% server interface
--export([config/0	 
+-export([get_config/0	 
 	]).
 
 
@@ -69,8 +70,15 @@ stop()-> gen_server:call(?MODULE, {stop},infinity).
 ping()->
     gen_server:call(?MODULE,{ping},infinity).
 
-config()->
-    gen_server:call(?MODULE,{config},infinity).
+%% @doc: Reads the configuration file computer.config that must be resided
+%%       in the working directory
+%%       get_config()-> [{vm_name,VmName::string()},{ip_addr,IpAddr::string()} 
+                     %    {port,Port::integer::()},{mode,Mode::atom()},{source,{Type::atom(),Source::string()}},
+                     %    {computer_type,Type::atom()},{services_to_load,[ServiceId::string()]}]).
+
+-spec(get_config()->[tuple()]|{error,Err::string()}).			 
+get_config()->
+    gen_server:call(?MODULE,{get_config},infinity).
 
 
 %%___________________________________________________________________
@@ -93,15 +101,16 @@ config()->
 %
 %% --------------------------------------------------------------------
 init([]) ->
-    %% scratch computer
-  %  FilesToKeep=lib_boot_service:get_config(files_to_keep),
-  %  lib_boot_service:scratch(FilesToKeep),
-    %%
     application:start(lib_service),
     IpAddr=lib_boot_service:get_config(ip_addr),
     Port=lib_boot_service:get_config(port),
     Mode=lib_boot_service:get_config(mode),
     ok=lib_service:start_tcp_server(IpAddr,Port,Mode),
+    %%
+    ServicesToLoad=lib_boot_service:get_config(services_to_load),
+    {Type,Source}=lib_boot_service:get_config(source),
+    container:create("include",Type,Source),
+    [container:create(ServiceId,Type,Source)||ServiceId<-ServicesToLoad],
     {ok, #state{ip_addr=IpAddr,port=Port}}.
     
 %% --------------------------------------------------------------------

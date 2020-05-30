@@ -1,8 +1,6 @@
 %%% -------------------------------------------------------------------
-%%% Author  : uabjle
-%%% Description : dbase using dets 
-%%%
-%%% Created : 10 dec 2012
+%%% @author  : uabjle
+%%% @doc : support functions boot_service
 %%% -------------------------------------------------------------------
 -module(lib_boot_service).
   
@@ -15,10 +13,10 @@
 %% --------------------------------------------------------------------
 
 %% External exports
-%-export([start/1
-%	]).
+-export([get_config/0,
+	 get_config/1
+	]).
 	 
--compile(export_all).
 
 
 %% ====================================================================
@@ -39,11 +37,6 @@ get_config(Key)->
 %% Description:
 %% Returns: non
 %% --------------------------------------------------------------------
-scratch(FilesToKeep)->
-    {ok,Files}=file:list_dir("."),
-    FilesToDelete=[File||File<-Files,false=:=lists:member(File,FilesToKeep)],
-    [os:cmd("rm -rf "++File)||File<-FilesToDelete],
-    FilesToDelete.
 
 %% --------------------------------------------------------------------
 %% Function: 
